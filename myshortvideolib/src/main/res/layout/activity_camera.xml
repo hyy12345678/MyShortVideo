@@ -14,31 +14,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <RelativeLayout android:id="@+id/rl_camera"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:paddingLeft="36dp"
-        android:paddingRight="36dp">
+    <!--<RelativeLayout android:id="@+id/rl_camera"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:paddingLeft="36dp"-->
+        <!--android:paddingRight="36dp">-->
 
-        <TextView android:id="@+id/tv_flash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:gravity="center_vertical"
-            android:drawableLeft="@drawable/btn_camera_flash"
-            android:textColor="#ffffff"
-            android:textSize="9sp"
-            android:drawablePadding="2dp"/>
+        <!--<TextView android:id="@+id/tv_flash"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:drawableLeft="@drawable/btn_camera_flash"-->
+            <!--android:textColor="#ffffff"-->
+            <!--android:textSize="9sp"-->
+            <!--android:drawablePadding="2dp"/>-->
 
-        <ImageView android:id="@+id/iv_facing"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/camera_facing"/>
+        <!--<ImageView android:id="@+id/iv_facing"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:src="@drawable/camera_facing"/>-->
 
-    </RelativeLayout>
+    <!--</RelativeLayout>-->
 
     <RelativeLayout
         android:layout_width="match_parent"

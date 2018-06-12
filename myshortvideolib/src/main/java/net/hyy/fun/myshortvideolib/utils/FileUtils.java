@@ -107,16 +107,24 @@ public class FileUtils {
      * @return
      */
     public static String getUploadCachePath(Context context) {
-        if (isSDCardExist()) {
-            String path = Environment.getExternalStorageDirectory() + File.separator + FILE_DIR + File.separator + UPLOAD_FILE + File.separator;
-            File directory = new File(path);
-            if (!directory.exists()) directory.mkdirs();
-            return path;
-        } else {
-            File directory = new File(context.getCacheDir(), FileUtils.FILE_DIR + File.separator + UPLOAD_FILE);
-            if (!directory.exists()) directory.mkdirs();
-            return directory.getAbsolutePath();
-        }
+
+
+        String cameraPath= Environment.getExternalStorageDirectory() + File.separator + Environment.DIRECTORY_DCIM+File.separator+"Camera"+File.separator;
+        File directory = new File(cameraPath);
+        if (!directory.exists()) directory.mkdirs();
+        return cameraPath;
+
+//        if (isSDCardExist()) {
+//            String path = Environment.getExternalStorageDirectory() + File.separator + FILE_DIR + File.separator + UPLOAD_FILE + File.separator;
+//            File directory = new File(path);
+//            if (!directory.exists()) directory.mkdirs();
+//            return path;
+//        } else {
+//            File directory = new File(context.getCacheDir(), FileUtils.FILE_DIR + File.separator + UPLOAD_FILE);
+//            if (!directory.exists()) directory.mkdirs();
+//            return directory.getAbsolutePath();
+//        }
+
     }
 
     /**

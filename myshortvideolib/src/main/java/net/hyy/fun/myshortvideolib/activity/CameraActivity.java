@@ -76,18 +76,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 录制按钮
      */
     private CameraProgressBar mProgressbar;
-    /**
-     *  顶部像机设置
-     */
-    private RelativeLayout rl_camera;
+
     /**
      * 关闭,选择,前后置
      */
-    private ImageView iv_close, iv_choice, iv_facing;
-    /**
-     * 闪光
-     */
-    private TextView tv_flash;
+    private ImageView iv_close, iv_choice;
+
     /**
      * camera manager
      */
@@ -131,15 +125,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mTextureView = (TextureView) findViewById(R.id.mTextureView);
         mCameraView = (CameraView) findViewById(R.id.mCameraView);
         mProgressbar = (CameraProgressBar) findViewById(R.id.mProgressbar);
-        rl_camera = (RelativeLayout) findViewById(R.id.rl_camera);
+
         iv_close = (ImageView) findViewById(R.id.iv_close);
         iv_close.setOnClickListener(this);
         iv_choice = (ImageView) findViewById(R.id.iv_choice);
         iv_choice.setOnClickListener(this);
-        iv_facing = (ImageView) findViewById(R.id.iv_facing);
-        iv_facing.setOnClickListener(this);
-        tv_flash = (TextView) findViewById(R.id.tv_flash);
-        tv_flash.setOnClickListener(this);
+
     }
 
     protected void initDatas() {
@@ -147,11 +138,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         playerManager = MediaPlayerManager.getInstance(getApplication());
         cameraManager.setCameraType(isSupportRecord ? 1 : 0);
 
-        tv_flash.setVisibility(cameraManager.isSupportFlashCamera() ? View.VISIBLE : View.GONE);
-        setCameraFlashState();
-        iv_facing.setVisibility(cameraManager.isSupportFrontCamera() ? View.VISIBLE : View.GONE);
-        rl_camera.setVisibility(cameraManager.isSupportFlashCamera()
-                || cameraManager.isSupportFrontCamera() ? View.VISIBLE : View.GONE);
+
 
         final int max = MAX_RECORD_TIME / PLUSH_PROGRESS;
         mProgressbar.setMaxProgress(max);
@@ -215,26 +202,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    /**
-     * 设置闪光状态
-     */
-    private void setCameraFlashState() {
-        int flashState = cameraManager.getCameraFlash();
-        switch (flashState) {
-            case 0: //自动
-                tv_flash.setSelected(true);
-                tv_flash.setText("自动");
-                break;
-            case 1://open
-                tv_flash.setSelected(true);
-                tv_flash.setText("开启");
-                break;
-            case 2: //close
-                tv_flash.setSelected(false);
-                tv_flash.setText("关闭");
-                break;
-        }
-    }
+
 
     /**
      * 是否显示录制按钮
@@ -244,12 +212,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (isShow) {
             mProgressbar.setVisibility(View.VISIBLE);
             iv_choice.setVisibility(View.INVISIBLE);
-            rl_camera.setVisibility(cameraManager.isSupportFlashCamera()
-                    || cameraManager.isSupportFrontCamera() ? View.VISIBLE : View.GONE);
+
         } else {
             mProgressbar.setVisibility(View.GONE);
             iv_choice.setVisibility(View.VISIBLE);
-            rl_camera.setVisibility(View.GONE);
+
         }
     }
 
@@ -355,15 +322,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             backResult();
 
 
-        } else if (i == R.id.tv_flash) {
-            cameraManager.changeCameraFlash(mTextureView.getSurfaceTexture(),
-                    mTextureView.getWidth(), mTextureView.getHeight());
-            setCameraFlashState();
-
-        } else if (i == R.id.iv_facing) {
-            cameraManager.changeCameraFacing(mTextureView.getSurfaceTexture(),
-                    mTextureView.getWidth(), mTextureView.getHeight());
-
         }
     }
 
@@ -372,6 +330,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      */
     private void backResult() {
         if(recorderPath != null){
+
+            scanFileAsync(this,recorderPath);
+
             Intent i = new Intent();
             i.putExtra("result",recorderPath);
             setResult(RESULT_OK,i);
@@ -379,6 +340,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         if (photoPath != null) {//有拍照
+
+            scanFileAsync(this,photoPath);
+
             Intent i = new Intent();
             i.putExtra("result",photoPath);
             setResult(RESULT_OK,i);
@@ -508,5 +472,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             });
         }
     };
+
+
+    /**
+     * 启动MediaScanner服务，扫描媒体文件
+     * @param ctx
+     * @param filePath
+     */
+    public void scanFileAsync(Context ctx, String filePath) {
+        Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        scanIntent.setData(Uri.fromFile(new File(filePath)));
+        ctx.sendBroadcast(scanIntent);
+    }
 
 }
