@@ -3,19 +3,13 @@ package net.hyy.fun.myshortvideolib.activity;
 import android.app.Activity;
 
 
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Surface;
@@ -31,14 +25,14 @@ import com.hyy.videocompressor.VideoCompress;
 import net.hyy.fun.myshortvideolib.R;
 import net.hyy.fun.myshortvideolib.camera.CameraManager;
 import net.hyy.fun.myshortvideolib.camera.CameraProgressBar;
+
+import net.hyy.fun.myshortvideolib.camera.CameraUtils;
 import net.hyy.fun.myshortvideolib.camera.CameraView;
 import net.hyy.fun.myshortvideolib.camera.MediaPlayerManager;
 import net.hyy.fun.myshortvideolib.utils.FileUtils;
 import net.hyy.fun.myshortvideolib.utils.ProgressDialogUtil;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
@@ -54,6 +48,8 @@ import rx.schedulers.Schedulers;
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String REQUEST_PARAM_COMPRESS = "REQUEST_PARAM_COMPRESS";
+    public static final String REQUEST_PARAM_FACING = "REQUEST_PARAM_FACING"; //0：后置，1：前置
+    public static final String REQUEST_PARAM_DURATION = "REQUEST_PARAM_DURATION";
 
     /**
      * 获取视频
@@ -66,7 +62,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     /**
      * 最长录制时间
      */
-    private static final int MAX_RECORD_TIME = 10 * 1000;
+//    private static final int MAX_RECORD_TIME = 10 * 1000;
+    private static int MAX_RECORD_TIME;
     /**
      * 刷新进度的间隔时间
      */
@@ -117,12 +114,18 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private boolean isRecording, isResume;
 
     private boolean isCompressed;//是否压缩
+    private int mFacing;
+    private int mDuration;
 
 
-
-    public static void lanuchForVideo(Activity context, boolean isCompressed) {
+    public static void lanuchForVideo(Activity context,
+                                      boolean isCompressed,
+                                      int facing,
+                                      int duration) {
         Intent intent = new Intent(context, CameraActivity.class);
         intent.putExtra(REQUEST_PARAM_COMPRESS, isCompressed);
+        intent.putExtra(REQUEST_PARAM_FACING,facing);
+        intent.putExtra(REQUEST_PARAM_DURATION,duration);
         context.startActivityForResult(intent, REQUEST_VIDEO);
     }
 
@@ -131,6 +134,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         mContext = this;
         isCompressed = getIntent().getBooleanExtra(REQUEST_PARAM_COMPRESS, false);
+        mFacing = getIntent().getIntExtra(REQUEST_PARAM_FACING,0);
+        mDuration = getIntent().getIntExtra(REQUEST_PARAM_DURATION,15);
+        mDuration++; //补偿1秒的录制耗损
+        if(mDuration > 31){
+            //最长不超过30秒
+            mDuration = 31;
+        }
 
         setContentView(R.layout.activity_camera);
         initView();
@@ -155,11 +165,24 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     protected void initDatas() {
+
+        //TODO 初始化facing，duration
+        if(0 == mFacing){
+            CameraUtils.setCameraFacing(this, Camera.CameraInfo.CAMERA_FACING_BACK);
+        }else{
+            CameraUtils.setCameraFacing(this, Camera.CameraInfo.CAMERA_FACING_FRONT);
+        }
+
+        MAX_RECORD_TIME = mDuration * 1000;
+
+
         cameraManager = CameraManager.getInstance(getApplication());
         playerManager = MediaPlayerManager.getInstance(getApplication());
         cameraManager.setCameraType(isSupportRecord ? 1 : 0);
 
-        iv_facing.setVisibility(cameraManager.isSupportFrontCamera() ? View.VISIBLE : View.GONE);
+        //TODO 注释，修改不允许手工切换前后置摄像头
+//        iv_facing.setVisibility(cameraManager.isSupportFrontCamera() ? View.VISIBLE : View.GONE);
+        iv_facing.setVisibility(View.GONE);
 
         final int max = MAX_RECORD_TIME / PLUSH_PROGRESS;
         mProgressbar.setMaxProgress(max);

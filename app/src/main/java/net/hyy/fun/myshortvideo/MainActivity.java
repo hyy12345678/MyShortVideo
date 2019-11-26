@@ -23,7 +23,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                CameraActivity.lanuchForVideo(MainActivity.this,true);
+                CameraActivity.lanuchForVideo(MainActivity.this,
+                        true,
+                        1,
+                        12);
             }
         });
 

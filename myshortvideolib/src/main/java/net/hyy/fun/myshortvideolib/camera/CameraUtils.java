@@ -12,7 +12,7 @@ import net.hyy.fun.myshortvideolib.utils.SPUtils;
  * Created by huangyy
  */
 
-final class CameraUtils {
+public final class CameraUtils {
     /**
      * 摄像机闪光灯状态
      */
@@ -46,7 +46,7 @@ final class CameraUtils {
      * @param context
      * @return 0为后置,1为前置
      */
-    static int getCameraFacing(Context context, int defaultId) {
+    public static int getCameraFacing(Context context, int defaultId) {
         return (int) SPUtils.get(context, CAMERA_AROUND, defaultId);
     }
 
@@ -56,7 +56,7 @@ final class CameraUtils {
      * @param context
      * @param around
      */
-    static void setCameraFacing(Context context, int around) {
+    public static void setCameraFacing(Context context, int around) {
         SPUtils.put(context, CAMERA_AROUND, around );
     }
 

@@ -48,7 +48,8 @@ public class CameraProgressBar extends View {
     /**
      * 进度颜色
      */
-    private int progressColor = Color.parseColor("#0ebffa");
+//    private int progressColor = Color.parseColor("#0ebffa");
+    private int progressColor = Color.parseColor("#00FF00");
     /**
      * 进度宽
      */
