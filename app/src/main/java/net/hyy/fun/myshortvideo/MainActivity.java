@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                CameraActivity.lanuchForPhoto(MainActivity.this);
+                CameraActivity.lanuchForVideo(MainActivity.this,true);
             }
         });
 
@@ -33,14 +33,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_OK && requestCode == CameraActivity.REQUEST_PHOTO){
+        if (resultCode == RESULT_OK && requestCode == CameraActivity.REQUEST_VIDEO) {
 
             String result = data.getStringExtra("result");
 
-            Toast.makeText(MainActivity.this,result,Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "REQUEST_VIDEO" + result, Toast.LENGTH_SHORT).show();
+
         }
 
 
-
     }
+
 }

@@ -109,7 +109,7 @@ public class FileUtils {
     public static String getUploadCachePath(Context context) {
 
 
-        String cameraPath= Environment.getExternalStorageDirectory() + File.separator + Environment.DIRECTORY_DCIM+File.separator+"Camera"+File.separator;
+        String cameraPath = Environment.getExternalStorageDirectory() + File.separator + Environment.DIRECTORY_DCIM + File.separator + "Camera" + File.separator;
         File directory = new File(cameraPath);
         if (!directory.exists()) directory.mkdirs();
         return cameraPath;
@@ -129,6 +129,7 @@ public class FileUtils {
 
     /**
      * jpg文件名
+     *
      * @param context
      * @return
      */
@@ -138,15 +139,31 @@ public class FileUtils {
 
     /**
      * mp4文件名
+     *
      * @param context
      * @return
      */
     public static String getUploadVideoFile(Context context) {
-        return getUploadCachePath(context) + getTimeString() + ".mp4";
+        return getUploadCachePath(context)+ getTimeString()+"_video_" + ".mp4";
     }
 
     /**
+     * mp4文件名
+     *
+     * @param context
+     * @return
+     */
+    public static String getCompressedUploadVideoFile(Context context) {
+
+//        return getUploadCachePath(context) + getTimeString() + ".mp4";
+
+        return getUploadCachePath(context) + "COMPRESS_" + getTimeString() + ".mp4";
+    }
+
+
+    /**
      * 保存拍摄图片
+     *
      * @param photoPath
      * @param data
      * @param isFrontFacing 是否为前置拍摄
@@ -181,6 +198,7 @@ public class FileUtils {
 
     /**
      * 把字节流按照图片方式大小进行压缩
+     *
      * @param datas
      * @param w
      * @param h
@@ -192,7 +210,7 @@ public class FileUtils {
             opts.inJustDecodeBounds = true;
             BitmapFactory.decodeByteArray(datas, 0, datas.length, opts);
             if (opts.outWidth != 0 && opts.outHeight != 0) {
-                LogUtils.i(opts.outWidth +" "+opts.outHeight);
+                LogUtils.i(opts.outWidth + " " + opts.outHeight);
                 int scaleX = opts.outWidth / w;
                 int scaleY = opts.outHeight / h;
                 int scale = 1;
@@ -204,7 +222,7 @@ public class FileUtils {
                 }
                 opts.inJustDecodeBounds = false;
                 opts.inSampleSize = scale;
-                LogUtils.i("compressBitmap inSampleSize "+datas.length+" "+scale);
+                LogUtils.i("compressBitmap inSampleSize " + datas.length + " " + scale);
                 return BitmapFactory.decodeByteArray(datas, 0, datas.length, opts);
             }
         }
@@ -213,6 +231,7 @@ public class FileUtils {
 
     /**
      * 质量压缩图片
+     *
      * @param bitmap
      * @param maxSize
      * @return
@@ -225,7 +244,7 @@ public class FileUtils {
         int options = 80;
         int longs = datas.length;
         while (longs > maxSize && options > 0) {
-            LogUtils.i("compressBitmapToBytes "+longs+"  "+options);
+            LogUtils.i("compressBitmapToBytes " + longs + "  " + options);
             baos.reset();
             bitmap.compress(Bitmap.CompressFormat.JPEG, options, baos);
             datas = baos.toByteArray();

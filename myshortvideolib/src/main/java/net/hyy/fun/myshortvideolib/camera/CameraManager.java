@@ -1,12 +1,20 @@
 package net.hyy.fun.myshortvideolib.camera;
 
 import android.app.Application;
+import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import net.hyy.fun.myshortvideolib.utils.LogUtils;
@@ -14,7 +22,6 @@ import net.hyy.fun.myshortvideolib.utils.LogUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 
 
 /**
@@ -123,6 +130,7 @@ public final class CameraManager {
         }
     }
 
+
     private void initCameraParameters(int cameraId, int width, int height) {
         Camera.Parameters parameters = mCamera.getParameters();
         if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
@@ -138,38 +146,71 @@ public final class CameraManager {
                     }
                 }
             }
-        }
-        parameters.setRotation(90);//设置旋转代码,
-        switch (cameraFlash) {
-            case 0:
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
-                break;
-            case 1:
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-                break;
-            case 2:
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                break;
-        }
-        List<Camera.Size> pictureSizes = filterSizes(parameters.getSupportedPictureSizes(), width, height);
-        List<Camera.Size> previewSizes = filterSizes(parameters.getSupportedPreviewSizes(), width, height);
-        if (!isEmpty(pictureSizes) && !isEmpty(previewSizes)) {
+
+            parameters.setRotation(90);//设置旋转代码,
+            switch (cameraFlash) {
+                case 0:
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                    break;
+                case 1:
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                    break;
+                case 2:
+                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                    break;
+            }
+            List<Camera.Size> pictureSizes = filterSizes(parameters.getSupportedPictureSizes(), width, height);
+            List<Camera.Size> previewSizes = filterSizes(parameters.getSupportedPreviewSizes(), width, height);
+            if (!isEmpty(pictureSizes) && !isEmpty(previewSizes)) {
             /*for (Camera.Size size : pictureSizes) {
                 LogUtils.i("pictureSize " + size.width + "  " + size.height);
             }
             for (Camera.Size size : pictureSizes) {
                 LogUtils.i("previewSize " + size.width + "  " + size.height);
             }*/
-            Camera.Size optimalPicSize = getOptimalSize(pictureSizes, width, height);
-            Camera.Size optimalPreSize = getOptimalSize(previewSizes, width, height);
-            LogUtils.i("TextureSize "+width+" "+height+" optimalSize pic " + optimalPicSize.width + " " + optimalPicSize.height + " pre " + optimalPreSize.width + " " + optimalPreSize.height);
-            parameters.setPictureSize(optimalPicSize.width, optimalPicSize.height);
-            parameters.setPreviewSize(optimalPreSize.width, optimalPreSize.height);
-            mProfile.videoFrameWidth = optimalPreSize.width;
-            mProfile.videoFrameHeight = optimalPreSize.height;
-            mProfile.videoBitRate = 5000000;//此参数主要决定视频拍出大小
+                Camera.Size optimalPicSize = getOptimalSize(pictureSizes, width, height);
+                Camera.Size optimalPreSize = getOptimalSize(previewSizes, width, height);
+                LogUtils.i("TextureSize " + width + " " + height + " optimalSize pic " + optimalPicSize.width + " " + optimalPicSize.height + " pre " + optimalPreSize.width + " " + optimalPreSize.height);
+                parameters.setPictureSize(optimalPicSize.width, optimalPicSize.height);
+                parameters.setPreviewSize(optimalPreSize.width, optimalPreSize.height);
+                mProfile.videoFrameWidth = optimalPreSize.width;
+                mProfile.videoFrameHeight = optimalPreSize.height;
+                mProfile.videoBitRate = 5000000;//此参数主要决定视频拍出大小
+            }
+
+            mCamera.setParameters(parameters);
+
+        } else {
+
+
+            List<Camera.Size> pictureSizes = filterSizes(parameters.getSupportedPictureSizes(), width, height);
+            List<Camera.Size> previewSizes = filterSizes(parameters.getSupportedPreviewSizes(), width, height);
+            if (!isEmpty(pictureSizes) && !isEmpty(previewSizes)) {
+            /*for (Camera.Size size : pictureSizes) {
+                LogUtils.i("pictureSize " + size.width + "  " + size.height);
+            }
+            for (Camera.Size size : pictureSizes) {
+                LogUtils.i("previewSize " + size.width + "  " + size.height);
+            }*/
+                Camera.Size optimalPicSize = getOptimalSize(pictureSizes, width, height);
+                Camera.Size optimalPreSize = getOptimalSize(previewSizes, width, height);
+                LogUtils.i("TextureSize " + width + " " + height + " optimalSize pic " + optimalPicSize.width + " " + optimalPicSize.height + " pre " + optimalPreSize.width + " " + optimalPreSize.height);
+                parameters.setPictureSize(optimalPicSize.width, optimalPicSize.height);
+                parameters.setPreviewSize(optimalPreSize.width, optimalPreSize.height);
+                mProfile.videoFrameWidth = optimalPreSize.width;
+                mProfile.videoFrameHeight = optimalPreSize.height;
+                mProfile.videoBitRate = 5000000;//此参数主要决定视频拍出大小
+            }
+
+
+            //前置
+            mCamera.setParameters(parameters);
+
         }
-        mCamera.setParameters(parameters);
+
+
+
+
     }
 
     /**
@@ -205,12 +246,13 @@ public final class CameraManager {
 
     /**
      * 过滤相素太小的参数
+     *
      * @param sizes
      * @return
      */
     private List<Camera.Size> filterSizes(List<Camera.Size> sizes, int w, int h) {
         if (sizes == null || sizes.isEmpty()) return sizes;
-        LogUtils.i("filterSizes "+sizes.size());
+        LogUtils.i("filterSizes " + sizes.size());
         List<Camera.Size> copy = new ArrayList<>(sizes.size());
         for (Camera.Size size : sizes) {
             copy.add(size);
@@ -225,7 +267,7 @@ public final class CameraManager {
         if (copy.isEmpty()) {
             return sizes;
         } else {
-            LogUtils.i("copy size"+copy.size());
+            LogUtils.i("copy size" + copy.size());
             return copy;
         }
     }
@@ -261,6 +303,7 @@ public final class CameraManager {
 
     /**
      * 缩放
+     *
      * @param isZoomIn
      */
     public void handleZoom(boolean isZoomIn) {
@@ -286,13 +329,13 @@ public final class CameraManager {
      * 更换前后置摄像
      */
     public void changeCameraFacing(SurfaceTexture surfaceTexture, int width, int height) {
-        if(isSupportFrontCamera) {
+        if (isSupportFrontCamera) {
             Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             int cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
-            for(int i = 0; i < cameraCount; i++) {
+            for (int i = 0; i < cameraCount; i++) {
                 Camera.getCameraInfo(i, cameraInfo);//得到每一个摄像头的信息
-                if(cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT) { //现在是后置，变更为前置
-                    if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位为前置
+                if (cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT) { //现在是后置，变更为前置
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位为前置
                         closeCamera();
                         cameraFacing = Camera.CameraInfo.CAMERA_FACING_BACK;
                         CameraUtils.setCameraFacing(context, cameraFacing);
@@ -300,7 +343,7 @@ public final class CameraManager {
                         break;
                     }
                 } else {//现在是前置， 变更为后置
-                    if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位
+                    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位
                         closeCamera();
                         cameraFacing = Camera.CameraInfo.CAMERA_FACING_FRONT;
                         CameraUtils.setCameraFacing(context, cameraFacing);
@@ -322,9 +365,9 @@ public final class CameraManager {
             Toast.makeText(context, "您的手机不支闪光", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(mCamera != null) {
+        if (mCamera != null) {
             Camera.Parameters parameters = mCamera.getParameters();
-            if(parameters != null) {
+            if (parameters != null) {
                 int newState = cameraFlash;
                 switch (cameraFlash) {
                     case 0: //自动
@@ -354,7 +397,7 @@ public final class CameraManager {
         if (mCamera != null) {
             try {
                 mCamera.takePicture(null, null, callback);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 Toast.makeText(context, "拍摄失败", Toast.LENGTH_SHORT).show();
             }
         }
@@ -437,6 +480,7 @@ public final class CameraManager {
 
     /**
      * 设置对焦类型
+     *
      * @param cameraType
      */
     public void setCameraType(int cameraType) {
@@ -466,6 +510,7 @@ public final class CameraManager {
 
     /**
      * 对焦
+     *
      * @param x
      * @param y
      */

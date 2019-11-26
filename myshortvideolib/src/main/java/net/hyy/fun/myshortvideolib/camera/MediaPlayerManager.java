@@ -24,6 +24,8 @@ public class MediaPlayerManager {
 
     private static MediaPlayerManager INSTANCE;
 
+    private boolean isPlaying = false; //是否在播放
+
     public static MediaPlayerManager getInstance(Application app) {
         if (INSTANCE == null) {
             synchronized (CameraManager.class) {
@@ -57,6 +59,8 @@ public class MediaPlayerManager {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     mp.start();
+
+                    isPlaying =true;
                 }
             });
         } catch (Exception e) {
@@ -75,10 +79,16 @@ public class MediaPlayerManager {
                 }
                 mPlayer.release();
                 mPlayer = null;
+
+                isPlaying = false;
             }
         } catch (Exception e) {
             LogUtils.i(e);
         }
     }
 
+
+    public boolean isPlaying() {
+        return isPlaying;
+    }
 }
